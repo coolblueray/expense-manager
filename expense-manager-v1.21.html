@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Manager</title>
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom styles for better UX */
+        .btn {
+            @apply py-2 px-4 rounded-md font-semibold focus:outline-none focus:ring-2 focus:ring-offset-2 transition-transform transform hover:scale-105;
+        }
+        .btn-primary {
+            @apply bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500;
+        }
+        .btn-secondary {
+            @apply bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500;
+        }
+        .btn-danger {
+             @apply text-red-600 hover:text-red-900;
+        }
+         .btn-edit {
+             @apply text-indigo-600 hover:text-indigo-900;
+        }
+        .form-input {
+            @apply mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">Expense Manager</h1>
+            <p class="text-gray-600 mt-2">Track your spending effortlessly</p>
+        </header>
+
+        <!-- Expense Form -->
+        <div class="bg-gradient-to-br from-white to-indigo-50 p-6 rounded-2xl shadow-lg mb-8 max-w-3xl mx-auto">
+            <h2 class="text-2xl font-semibold mb-6 text-indigo-800" id="form-title">Add New Expense</h2>
+            <form id="expense-form" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                <div class="md:col-span-2">
+                    <label for="expense-name" class="block text-sm font-medium text-gray-700">Expense Name</label>
+                    <input type="text" id="expense-name" class="form-input" placeholder="e.g., Coffee with friends" required>
+                </div>
+                <div>
+                    <label for="expense-category" class="block text-sm font-medium text-gray-700">Category</label>
+                    <select id="expense-category" class="form-input" required>
+                        <option>Personal</option>
+                        <option>Family</option>
+                        <option>Eating Out</option>
+                        <option>School</option>
+                        <option>Stationary</option>
+                        <option>SOHO</option>
+                        <option>Household</option>
+                        <option>Vehicle</option>
+                        <option>Medical</option>
+                        <option>Grocery</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="expense-amount" class="block text-sm font-medium text-gray-700">Amount (INR)</label>
+                    <div class="relative">
+                         <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">₹</span>
+                         <input type="number" id="expense-amount" min="0" step="0.01" class="form-input pl-7" placeholder="150.00" required>
+                    </div>
+                </div>
+                <div>
+                    <label for="payment-type" class="block text-sm font-medium text-gray-700">Payment Type</label>
+                    <select id="payment-type" class="form-input" required>
+                        <option>Cash</option>
+                        <option>Electronic Transfer</option>
+                        <option>Credit Card</option>
+                        <option>Debit Card</option>
+                    </select>
+                </div>
+                 <div>
+                    <label for="expense-date" class="block text-sm font-medium text-gray-700">Date</label>
+                    <input type="date" id="expense-date" class="form-input" required>
+                </div>
+                 <div>
+                    <label for="expense-time" class="block text-sm font-medium text-gray-700">Time</label>
+                    <input type="time" id="expense-time" class="form-input" required>
+                </div>
+                <div class="md:col-span-2 flex items-center gap-4 mt-4">
+                    <button type="submit" id="submit-button" class="btn btn-primary w-full shadow-lg">Add Expense</button>
+                    <button type="button" id="cancel-edit-button" class="btn btn-secondary w-full hidden">Cancel Edit</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Expenses List -->
+        <div class="bg-sky-100 p-6 rounded-2xl shadow-lg mb-8">
+            <h2 class="text-2xl font-bold mb-4 text-sky-900">Your Expenses</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-300">
+                    <thead class="bg-sky-200">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-sky-800 uppercase tracking-wider">Date & Time</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-sky-800 uppercase tracking-wider">Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-sky-800 uppercase tracking-wider">Category</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-sky-800 uppercase tracking-wider">Amount</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-sky-800 uppercase tracking-wider">Payment</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-sky-800 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="expense-list" class="bg-white divide-y divide-gray-200">
+                        <!-- Expense items will be dynamically injected here by JavaScript -->
+                    </tbody>
+                </table>
+                 <div id="no-expenses-message" class="text-center py-8 text-gray-500 hidden">
+                    <p>You haven't added any expenses yet.</p>
+                    <p class="text-sm">Use the form above to get started!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reports Section -->
+        <div class="bg-white p-6 rounded-2xl shadow-lg">
+            <h2 class="text-2xl font-semibold mb-4">Expense Reports</h2>
+            <div class="flex flex-wrap gap-4 mb-6">
+                <button id="weekly-report-btn" class="btn bg-green-500 text-white hover:bg-green-600 focus:ring-green-400">This Week</button>
+                <button id="monthly-report-btn" class="btn bg-blue-500 text-white hover:bg-blue-600 focus:ring-blue-400">This Month</button>
+                <button id="annual-report-btn" class="btn bg-purple-500 text-white hover:bg-purple-600 focus:ring-purple-400">This Year</button>
+            </div>
+            <div id="report-output" class="prose max-w-none prose-headings:font-semibold prose-headings:text-gray-800">
+                 <p class="text-gray-500">Select a report period to see your spending summary.</p>
+            </div>
+
+            <!-- CSV Import/Export -->
+            <div class="mt-8 pt-4 border-t border-gray-200">
+                <h3 class="text-xl font-semibold mb-4">Data Management</h3>
+                <div class="flex flex-wrap gap-4">
+                    <button id="export-csv-btn" class="btn bg-teal-500 text-white hover:bg-teal-600 focus:ring-teal-400">Export as CSV</button>
+                    <input type="file" id="import-csv-input" accept=".csv" class="hidden"/>
+                    <button id="import-csv-btn" class="btn bg-orange-500 text-white hover:bg-orange-600 focus:ring-orange-400">Import from CSV</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    
+    <!-- Custom Modal for confirmation -->
+    <div id="confirmation-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Confirm Deletion</h3>
+                <div class="mt-2 px-7 py-3">
+                    <p class="text-sm text-gray-500">Are you sure you want to delete this expense? This action cannot be undone.</p>
+                </div>
+                <div class="items-center px-4 py-3 gap-4 flex justify-center">
+                    <button id="confirm-delete-btn" class="btn btn-danger bg-red-500 text-white hover:bg-red-600 focus:ring-red-400 px-4">Delete</button>
+                    <button id="cancel-delete-btn" class="btn btn-secondary px-4">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Form Elements
+            const expenseForm = document.getElementById('expense-form');
+            const formTitle = document.getElementById('form-title');
+            const submitButton = document.getElementById('submit-button');
+            const cancelEditButton = document.getElementById('cancel-edit-button');
+
+            // Form Inputs
+            const expenseNameInput = document.getElementById('expense-name');
+            const expenseCategoryInput = document.getElementById('expense-category');
+            const expenseAmountInput = document.getElementById('expense-amount');
+            const paymentTypeInput = document.getElementById('payment-type');
+            const expenseDateInput = document.getElementById('expense-date');
+            const expenseTimeInput = document.getElementById('expense-time');
+            
+            // Expense List & Message
+            const expenseList = document.getElementById('expense-list');
+            const noExpensesMessage = document.getElementById('no-expenses-message');
+            
+            // Modal Elements
+            const confirmationModal = document.getElementById('confirmation-modal');
+            const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+            const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+
+            // CSV Elements
+            const exportCsvBtn = document.getElementById('export-csv-btn');
+            const importCsvBtn = document.getElementById('import-csv-btn');
+            const importCsvInput = document.getElementById('import-csv-input');
+
+
+            // State
+            let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+            let editIndex = -1;
+            let deleteIndex = -1;
+
+            // --- DATA & CONFIG ---
+            const categoryColors = {
+                'Personal': 'bg-blue-100 text-blue-800',
+                'Family': 'bg-green-100 text-green-800',
+                'Eating Out': 'bg-yellow-100 text-yellow-800',
+                'School': 'bg-purple-100 text-purple-800',
+                'Stationary': 'bg-pink-100 text-pink-800',
+                'SOHO': 'bg-indigo-100 text-indigo-800',
+                'Household': 'bg-red-100 text-red-800',
+                'Vehicle': 'bg-gray-200 text-gray-800',
+                'Medical': 'bg-orange-100 text-orange-800',
+                'Grocery': 'bg-teal-100 text-teal-800',
+                'Default': 'bg-gray-100 text-gray-800' // Fallback
+            };
+
+            // --- UTILITY FUNCTIONS ---
+            const setDefaultDateTime = () => {
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = (now.getMonth() + 1).toString().padStart(2, '0');
+                const day = now.getDate().toString().padStart(2, '0');
+                const hours = now.getHours().toString().padStart(2, '0');
+                const minutes = now.getMinutes().toString().padStart(2, '0');
+                expenseDateInput.value = `${year}-${month}-${day}`;
+                expenseTimeInput.value = `${hours}:${minutes}`;
+            };
+            
+            const saveExpenses = () => {
+                localStorage.setItem('expenses', JSON.stringify(expenses));
+            };
+
+            // --- RENDER FUNCTION ---
+            const renderExpenses = () => {
+                expenseList.innerHTML = '';
+                if (expenses.length === 0) {
+                    noExpensesMessage.classList.remove('hidden');
+                    expenseList.classList.add('hidden');
+                } else {
+                    noExpensesMessage.classList.add('hidden');
+                    expenseList.classList.remove('hidden');
+                    // Sort expenses by date and time, most recent first
+                    const sortedExpenses = [...expenses].sort((a, b) => new Date(b.date + 'T' + b.time) - new Date(a.date + 'T' + a.time));
+                    sortedExpenses.forEach((expense) => {
+                        const colorClass = categoryColors[expense.category] || categoryColors['Default'];
+                        const expenseRow = document.createElement('tr');
+                        expenseRow.innerHTML = `
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${new Date(expense.date + 'T' + expense.time).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</td>
+                            <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">${expense.name}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${colorClass}">
+                                    ${expense.category}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 font-mono">₹${parseFloat(expense.amount).toFixed(2)}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${expense.payment}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <button onclick="startEdit(${expense.id})" class="btn-edit">Edit</button>
+                                <button onclick="startDelete(${expense.id})" class="btn-danger ml-4">Delete</button>
+                            </td>
+                        `;
+                        expenseList.appendChild(expenseRow);
+                    });
+                }
+            };
+
+            // --- FORM HANDLING ---
+            const resetForm = () => {
+                expenseForm.reset();
+                setDefaultDateTime();
+                editIndex = -1;
+                formTitle.textContent = 'Add New Expense';
+                submitButton.textContent = 'Add Expense';
+                cancelEditButton.classList.add('hidden');
+            };
+
+            expenseForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const expenseData = {
+                    name: expenseNameInput.value.trim(),
+                    category: expenseCategoryInput.value,
+                    amount: parseFloat(expenseAmountInput.value).toFixed(2), // Ensure amount is fixed to 2 decimal places
+                    payment: paymentTypeInput.value,
+                    date: expenseDateInput.value,
+                    time: expenseTimeInput.value,
+                    id: editIndex > -1 ? expenses[editIndex].id : Date.now()
+                };
+
+                if (editIndex > -1) {
+                    expenses[editIndex] = expenseData;
+                } else {
+                    expenses.push(expenseData);
+                }
+
+                saveExpenses();
+                renderExpenses();
+                resetForm();
+            });
+            
+            cancelEditButton.addEventListener('click', resetForm);
+
+            // --- CRUD OPERATIONS ---
+            window.startEdit = (id) => {
+                const index = expenses.findIndex(exp => exp.id === id);
+                if (index === -1) return;
+                
+                editIndex = index;
+                const expense = expenses[index];
+                expenseNameInput.value = expense.name;
+                expenseCategoryInput.value = expense.category;
+                expenseAmountInput.value = expense.amount;
+                paymentTypeInput.value = expense.payment;
+                expenseDateInput.value = expense.date;
+                expenseTimeInput.value = expense.time;
+
+                formTitle.textContent = 'Edit Expense';
+                submitButton.textContent = 'Update Expense';
+                cancelEditButton.classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+            
+            window.startDelete = (id) => {
+                const index = expenses.findIndex(exp => exp.id === id);
+                if (index === -1) return;
+                deleteIndex = index;
+                confirmationModal.classList.remove('hidden');
+            };
+            
+            confirmDeleteBtn.addEventListener('click', () => {
+                if (deleteIndex > -1) {
+                    expenses.splice(deleteIndex, 1);
+                    saveExpenses();
+                    renderExpenses();
+                    deleteIndex = -1;
+                }
+                confirmationModal.classList.add('hidden');
+            });
+
+            cancelDeleteBtn.addEventListener('click', () => {
+                deleteIndex = -1;
+                confirmationModal.classList.add('hidden');
+            });
+
+            // --- REPORTING ---
+            const reportOutput = document.getElementById('report-output');
+            const weeklyReportBtn = document.getElementById('weekly-report-btn');
+            const monthlyReportBtn = document.getElementById('monthly-report-btn');
+            const annualReportBtn = document.getElementById('annual-report-btn');
+
+            const getWeekNumber = (d) => {
+                d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+                d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
+                var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+                var weekNo = Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+                return [d.getUTCFullYear(), weekNo];
+            };
+
+            const generateReport = (period) => {
+                reportOutput.innerHTML = '';
+                const now = new Date();
+                let filteredExpenses = [];
+                let periodTitle = '';
+
+                if (period === 'weekly') {
+                    periodTitle = 'This Week';
+                    const [currentYear, currentWeek] = getWeekNumber(now);
+                    filteredExpenses = expenses.filter(expense => {
+                        const expenseDate = new Date(expense.date);
+                        const [expenseYear, expenseWeek] = getWeekNumber(expenseDate);
+                        return expenseYear === currentYear && expenseWeek === currentWeek;
+                    });
+                } else if (period === 'monthly') {
+                    periodTitle = 'This Month';
+                    const currentMonth = now.getMonth();
+                    const currentYear = now.getFullYear();
+                    filteredExpenses = expenses.filter(expense => {
+                        const expenseDate = new Date(expense.date);
+                        return expenseDate.getMonth() === currentMonth && expenseDate.getFullYear() === currentYear;
+                    });
+                } else if (period === 'annual') {
+                    periodTitle = 'This Year';
+                    const currentYear = now.getFullYear();
+                    filteredExpenses = expenses.filter(expense => {
+                        const expenseDate = new Date(expense.date);
+                        return expenseDate.getFullYear() === currentYear;
+                    });
+                }
+
+                if (filteredExpenses.length === 0) {
+                    reportOutput.innerHTML = `<h3>${periodTitle} Report</h3><p>No expenses recorded for this period.</p>`;
+                    return;
+                }
+
+                const total = filteredExpenses.reduce((sum, exp) => sum + parseFloat(exp.amount), 0);
+                
+                const byCategory = filteredExpenses.reduce((acc, exp) => {
+                    acc[exp.category] = (acc[exp.category] || 0) + parseFloat(exp.amount);
+                    return acc;
+                }, {});
+
+                const byPaymentType = filteredExpenses.reduce((acc, exp) => {
+                    acc[exp.payment] = (acc[exp.payment] || 0) + parseFloat(exp.amount);
+                    return acc;
+                }, {});
+
+                let reportHTML = `
+                    <h3>${periodTitle} Report</h3>
+                    <p class="!text-lg !font-bold">Total Expenses: <span class="font-mono">₹${total.toFixed(2)}</span></p>
+                    
+                    <div class="grid md:grid-cols-2 gap-6 mt-4">
+                        <div>
+                            <h4>By Category:</h4>
+                            <ul class="!list-disc !pl-5">
+                                ${Object.entries(byCategory).sort((a,b) => b[1] - a[1]).map(([cat, amount]) => `<li>${cat}: <span class="font-mono">₹${amount.toFixed(2)}</span></li>`).join('')}
+                            </ul>
+                        </div>
+                        <div>
+                            <h4>By Payment Type:</h4>
+                             <ul class="!list-disc !pl-5">
+                                ${Object.entries(byPaymentType).sort((a,b) => b[1] - a[1]).map(([type, amount]) => `<li>${type}: <span class="font-mono">₹${amount.toFixed(2)}</span></li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                `;
+                reportOutput.innerHTML = reportHTML;
+            };
+            
+            weeklyReportBtn.addEventListener('click', () => generateReport('weekly'));
+            monthlyReportBtn.addEventListener('click', () => generateReport('monthly'));
+            annualReportBtn.addEventListener('click', () => generateReport('annual'));
+
+            // --- CSV IMPORT/EXPORT FUNCTIONS ---
+
+            const escapeCSV = (value) => {
+                if (typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'))) {
+                    return `"${value.replace(/"/g, '""')}"`;
+                }
+                return value;
+            };
+
+            const exportExpensesCSV = () => {
+                if (expenses.length === 0) {
+                    // Using a custom modal/message box instead of alert()
+                    alert('No expenses to export.'); // Replace with custom modal later if needed
+                    return;
+                }
+
+                const headers = ['ID', 'Name', 'Category', 'Amount', 'Payment Type', 'Date', 'Time'];
+                const csvRows = [];
+                csvRows.push(headers.map(escapeCSV).join(','));
+
+                expenses.forEach(expense => {
+                    const row = [
+                        expense.id,
+                        expense.name,
+                        expense.category,
+                        parseFloat(expense.amount).toFixed(2),
+                        expense.payment,
+                        expense.date,
+                        expense.time
+                    ];
+                    csvRows.push(row.map(escapeCSV).join(','));
+                });
+
+                const csvString = csvRows.join('\n');
+                const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.setAttribute('download', 'expenses.csv');
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            };
+
+            const importExpensesCSV = (event) => {
+                const file = event.target.files[0];
+                if (!file) {
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const text = e.target.result;
+                    const lines = text.split('\n').filter(line => line.trim() !== '');
+
+                    if (lines.length === 0) {
+                        alert('CSV file is empty.'); // Replace with custom modal later if needed
+                        return;
+                    }
+
+                    // Assuming the first line is headers
+                    const headers = lines[0].split(',').map(header => header.trim().toLowerCase().replace(/\s/g, ''));
+                    const requiredHeaders = ['id', 'name', 'category', 'amount', 'paymenttype', 'date', 'time'];
+                    
+                    const missingHeaders = requiredHeaders.filter(header => !headers.includes(header));
+                    if (missingHeaders.length > 0) {
+                        alert(`Missing required CSV headers: ${missingHeaders.join(', ')}. Please ensure your CSV has 'ID', 'Name', 'Category', 'Amount', 'Payment Type', 'Date', 'Time' columns.`); // Replace with custom modal later if needed
+                        return;
+                    }
+
+                    const newExpenses = [];
+                    for (let i = 1; i < lines.length; i++) {
+                        const values = lines[i].split(',').map(value => value.trim());
+                        if (values.length !== headers.length) {
+                            console.warn(`Skipping malformed row: ${lines[i]}`);
+                            continue;
+                        }
+
+                        const expense = {};
+                        headers.forEach((header, index) => {
+                            expense[header] = values[index];
+                        });
+
+                        // Basic validation and type conversion
+                        const parsedAmount = parseFloat(expense.amount);
+                        if (isNaN(parsedAmount) || parsedAmount < 0) {
+                            console.warn(`Skipping row due to invalid amount: ${lines[i]}`);
+                            continue;
+                        }
+                        
+                        // Ensure category and payment type are among the allowed options
+                        const allowedCategories = Array.from(expenseCategoryInput.options).map(option => option.value);
+                        const allowedPaymentTypes = Array.from(paymentTypeInput.options).map(option => option.value);
+
+                        if (!allowedCategories.includes(expense.category)) {
+                            console.warn(`Skipping row due to invalid category: ${expense.category} in row: ${lines[i]}`);
+                            continue;
+                        }
+
+                        if (!allowedPaymentTypes.includes(expense.paymenttype)) {
+                            console.warn(`Skipping row due to invalid payment type: ${expense.paymenttype} in row: ${lines[i]}`);
+                            continue;
+                        }
+
+                        // Reformat keys to match existing expense structure
+                        newExpenses.push({
+                            id: parseInt(expense.id) || Date.now() + i, // Use existing ID or generate a new one
+                            name: expense.name,
+                            category: expense.category,
+                            amount: parsedAmount.toFixed(2),
+                            payment: expense.paymenttype,
+                            date: expense.date,
+                            time: expense.time
+                        });
+                    }
+                    
+                    if (newExpenses.length > 0) {
+                        // Merge with existing expenses, potentially overwriting based on ID or adding new
+                        newExpenses.forEach(newExp => {
+                            const existingIndex = expenses.findIndex(exp => exp.id === newExp.id);
+                            if (existingIndex > -1) {
+                                expenses[existingIndex] = newExp; // Overwrite
+                            } else {
+                                expenses.push(newExp); // Add new
+                            }
+                        });
+                        saveExpenses();
+                        renderExpenses();
+                        alert(`${newExpenses.length} expenses imported successfully!`); // Replace with custom modal later if needed
+                    } else {
+                        alert('No valid expenses found in the CSV file for import.'); // Replace with custom modal later if needed
+                    }
+                };
+                reader.readAsText(file);
+                // Clear the input value to allow re-importing the same file
+                event.target.value = ''; 
+            };
+
+            exportCsvBtn.addEventListener('click', exportExpensesCSV);
+            importCsvBtn.addEventListener('click', () => importCsvInput.click());
+            importCsvInput.addEventListener('change', importExpensesCSV);
+
+
+            // --- INITIALIZATION ---
+            setDefaultDateTime();
+            renderExpenses();
+        });
+    </script>
+
+</body>
+</html>
